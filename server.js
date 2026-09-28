@@ -1,46 +1,56 @@
-// Basic Node.js Web Server using HTTP Module
-// Handles multiple routes and serves different HTML pages
-// server.js
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
 const PORT = 3000;
 
-// Helper function to serve files asynchronously
-const serveFile = (filePath, contentType, response, statusCode = 200) => {
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      response.writeHead(500, { "Content-Type": "text/plain" });
-      response.end("Internal Server Error");
-    } else {
-      response.writeHead(statusCode, { "Content-Type": contentType });
-      response.end(data);
+function sendFile(filePath, contentType, res, statusCode = 200) {
+  fs.readFile(filePath, (error, data) => {
+    if (error) {
+      res.writeHead(500, { "Content-Type": "text/plain" });
+      res.end("Something went wrong on the server.");
+      return;
     }
+
+    res.writeHead(statusCode, {
+      "Content-Type": contentType
+    });
+
+    res.end(data);
   });
-};
+}
 
-// Create the HTTP server
+
 const server = http.createServer((req, res) => {
-  console.log(`Request for ${req.url}`);
+  console.log("User requested:", req.url);
 
-  // Route handling
+  
   if (req.url === "/" || req.url === "/home") {
-    serveFile(path.join(__dirname, "pages", "home.html"), "text/html", res);
+    const homePage = path.join(__dirname, "pages", "home.html");
+    sendFile(homePage, "text/html", res);
+
+  
   } else if (req.url === "/about") {
-    serveFile(path.join(__dirname, "pages", "about.html"), "text/html", res);
+    const aboutPage = path.join(__dirname, "pages", "about.html");
+    sendFile(aboutPage, "text/html", res);
+
+  
   } else if (req.url === "/contact") {
-    serveFile(path.join(__dirname, "pages", "contact.html"), "text/html", res);
+    const contactPage = path.join(__dirname, "pages", "contact.html");
+    sendFile(contactPage, "text/html", res);
+
+  
   } else if (req.url === "/style.css") {
-    // Serve CSS file
-    serveFile(path.join(__dirname, "public", "style.css"), "text/css", res);
+    const cssFile = path.join(__dirname, "public", "style.css");
+    sendFile(cssFile, "text/css", res);
+
+  
   } else {
-    // 404 page
-    serveFile(path.join(__dirname, "pages", "404.html"), "text/html", res, 404);
+    const errorPage = path.join(__dirname, "pages", "404.html");
+    sendFile(errorPage, "text/html", res, 404);
   }
 });
 
-// Start listening on port 3000
 server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
